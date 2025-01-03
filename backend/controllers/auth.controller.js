@@ -4,11 +4,15 @@ const jwt = require("jsonwebtoken");
 
 const register = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { username, password, role } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ username, password: hashedPassword });
+    const newUser = new User({ username, password: hashedPassword, role });
     await newUser.save();
-    res.status(201).json({ message: "User registered successfully" });
+    const token = jwt.sign(
+      { id: newUser._id, role: newUser.role },
+      process.env.JWT_SECRET
+    );
+    res.status(201).json({ message: "User registered successfully", token });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
